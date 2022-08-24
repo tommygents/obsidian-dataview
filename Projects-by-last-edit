@@ -1,0 +1,39 @@
+// make 'projects' the subset of my notes that I'm interested in searching
+let projects = dv.pages("#project and -#project/todos and -#archival")
+	.where(p => !p.file.folder.includes("Dailies") & !p.file.folder.includes("Inbox"));
+	
+ //We're going to push ordered pairs into our stack. The first member of the pair will be a link to a project page; the second
+ //member will be the most recent update time for the project page or any page that is a subproject of that project.
+let stack = [];
+	
+	
+for (let project of projects) {
+
+		let update = dv.pages() //update will be the most recently updated page for project of projects
+		.where(p => typeof(p.parent) !== 'undefined' && p.parent !== null) //first we eliminate any page that has an undefined parent, to avoid an error later on
+
+		.where(p => 
+		p.parent === project.file.name || //get pages that explicitly identify project as their parent
+		p.file.name === project.file.name || //get project itself
+    dv.array(p.parent).includes(project.file.name) || //get pages with more than one parent that include project as their parent
+		(typeof(p.parent.path) !== 'undefined' && typeof(dv.page(p.parent.path)) !== 'undefined' &&
+dv.page(p.parent.path).file.name == project.file.name) // get pages that have a link as their parent, and see if that link is to project
+		//update is now a list of all pages that have project as parent, plus project itself
+		
+		)
+		.sort(p => p.file.mtime, 'desc') //sort update by most recently modified
+			
+		.file.mtime.first(); //take the modification time time of the first file in the list, and return that as update
+			
+			let pair = [project.file.link, update]; //creates the ordered pair to push to stack
+		
+		
+		stack.push(pair);	// add the file and the corresponding mtime to the stack.
+		
+	} 
+
+	dv.table(["Project","Modified"],
+	dv.array(stack)
+		.sort(p => p[1], 'desc').slice(0,10)
+		); //create a table with the 10 most recently modified members of stack, which are the ten most recently modified projects.
+```
