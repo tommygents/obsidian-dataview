@@ -1,0 +1,12 @@
+
+let tpages = dv.pages("#project/todos") //tpages will be an array of page objects that have open todos
+.where(f => (!f.file.path.startsWith("Templates/"))) //removes things from my 'Template' folder, so things like my packing list are not perpetually on this list
+.where(t => t.file.tasks.where(s => !s.fullyCompleted).length !== 0); //finds all pages where the number of incomplete tasks is not zero.
+
+for (let group of tpages.groupBy(g => g.project)) {
+dv.header(2, group.key);
+for (let row of group.rows) {
+dv.taskList(row.file.tasks.where(t => !t.completed), true);
+  } //groups the pages in tpages by the project they're identified with, and then displays the todos under that project
+
+}
